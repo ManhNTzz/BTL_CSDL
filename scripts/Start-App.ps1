@@ -5,12 +5,23 @@ $configPath = Join-Path $projectRoot 'config\application-local.properties'
 $jarPath = Join-Path $projectRoot 'backend\target\QuanLyKTX.jar'
 $runDir = Join-Path $projectRoot 'run'
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
+$configDir = Join-Path $projectRoot 'config'
+if (-not (Test-Path -LiteralPath $configDir)) {
+    New-Item -ItemType Directory -Force -Path $configDir | Out-Null
+}
 if (-not (Test-Path -LiteralPath $configPath)) {
-    Copy-Item -LiteralPath (Join-Path $projectRoot 'config\application-local.example.properties') -Destination $configPath
-    Write-Host 'Lan dau: dien ten CSDL, tai khoan va mat khau MySQL trong tep cau hinh, luu lai roi chay Chay_App.bat lan nua.' -ForegroundColor Yellow
-    Start-Process -FilePath notepad.exe -ArgumentList ('"' + $configPath + '"')
-    if ($env:KTX_NON_INTERACTIVE -ne '1') { Read-Host 'Nhan Enter de dong' }
-    exit 0
+    $examplePath = Join-Path $configDir 'application-local.example.properties'
+    if (Test-Path -LiteralPath $examplePath) {
+        Copy-Item -LiteralPath $examplePath -Destination $configPath
+    } else {
+        @"
+spring.datasource.url=jdbc:mysql://127.0.0.1:3306/QuanLyKTX?useUnicode=true&characterEncoding=UTF-8&connectionTimeZone=Asia/Ho_Chi_Minh
+spring.datasource.username=root
+spring.datasource.password=6264
+spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+server.port=8080
+"@ | Set-Content -LiteralPath $configPath -Encoding UTF8
+    }
 }
 if (-not (Test-Path -LiteralPath $jarPath)) {
     Write-Host 'Chua co file thuc thi backend/target/QuanLyKTX.jar. Dang tu dong build ung dung lan dau...' -ForegroundColor Yellow
