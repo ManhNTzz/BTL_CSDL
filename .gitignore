@@ -1,0 +1,12 @@
+backend/target/
+frontend/node_modules/
+frontend/dist/
+config/application-local.properties
+backend/src/main/resources/application-dev.properties
+frontend/.env.local
+frontend/.env.*.local
+run/
+*.log
+.vscode/
+.idea/
+*.class
