@@ -15,20 +15,22 @@ Hệ thống Quản lý Ký túc xá được xây dựng với kiến trúc hi�
 - *(Không bắt buộc cài Maven hay Node.js/npm vì dự án đã tích hợp sẵn Maven Wrapper và giao diện web pre-built).*
 
 ### 2. Tạo Cơ sở dữ liệu
-1. Mở file `database/01_tao_csdl_moi.sql` (hoặc file SQL sinh database trong Yêu cầu 2) trong **MySQL Workbench** (hoặc DBeaver / Navicat / HeidiSQL).
-2. Chạy toàn bộ file (biểu tượng tia sét) để tạo database `QuanLyKTX`, cấu trúc bảng, ràng buộc toàn vẹn, trigger, stored procedure và dữ liệu mẫu đầy đủ.
+1. Lấy file sql sinh database trong Yêu cầu 2.
+2. Chạy toàn bộ file (biểu tượng tia sét) để tạo database `QuanLyKTX`, cấu trúc bảng và dữ liệu mẫu đầy đủ.
 
-### 3. Khởi động ứng dụng
+### 3. Đóng gói ứng dụng (Build JAR)
+- Nhấp đúp file **`Build_App.bat`** (chỉ cần chạy một lần khi mới tải từ GitHub về).
+- Script sẽ tự động dùng Maven Wrapper đóng gói ứng dụng thành file thực thi `backend/target/QuanLyKTX.jar`.
+
+### 4. Khởi động ứng dụng
 1. Nhấp đúp file **`Chay_App.bat`**.
-2. Ứng dụng sẽ tự động khởi động và mở giao diện ứng dụng trên trình duyệt (Microsoft Edge / Google Chrome).
-*(Lưu ý: Mật khẩu MySQL mặc định cấu hình sẵn là `6264`. Nếu MySQL của bạn đặt mật khẩu khác, hãy mở file `config/application-local.properties` và sửa dòng `spring.datasource.password=...` cho khớp).*
+2. Ở lần đầu tiên chạy, chương trình sẽ tự tạo và mở file cấu hình `config/application-local.properties` bằng Notepad:
+   - Điền mật khẩu MySQL của bạn vào dòng `spring.datasource.password=...`
+   - Lưu file (`Ctrl + S`) và đóng Notepad.
+3. Chạy lại **`Chay_App.bat`**. Ứng dụng sẽ tự động kết nối CSDL và mở giao diện quản lý trên trình duyệt (Microsoft Edge / Google Chrome).
 
-### 4. Tắt ứng dụng
+### 5. Tắt ứng dụng
 - Khi dùng xong, nhấp đúp file **`Tat_App.bat`** để dừng an toàn dịch vụ backend.
-
-### 5. Đóng gói lại (tùy chọn)
-- File thực thi `backend/target/QuanLyKTX.jar` đã được đóng gói sẵn và đính kèm trong dự án.
-- Nếu bạn có chỉnh sửa mã nguồn backend/frontend và muốn đóng gói lại, chỉ cần nhấp đúp file **`Build_App.bat`**.
 
 ---
 
