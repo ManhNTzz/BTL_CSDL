@@ -12,7 +12,13 @@ if (-not (Test-Path -LiteralPath $configPath)) {
     if ($env:KTX_NON_INTERACTIVE -ne '1') { Read-Host 'Nhan Enter de dong' }
     exit 0
 }
-if (-not (Test-Path -LiteralPath $jarPath)) { throw 'Khong tim thay backend/target/QuanLyKTX.jar. Hay giai nen day du ZIP hoac build lai backend.' }
+if (-not (Test-Path -LiteralPath $jarPath)) {
+    Write-Host 'Chua co file thuc thi backend/target/QuanLyKTX.jar. Dang tu dong build ung dung lan dau...' -ForegroundColor Yellow
+    & powershell.exe -NoProfile -ExecutionPolicy Bypass -File (Join-Path $projectRoot 'scripts\Build-App.ps1')
+    if (-not (Test-Path -LiteralPath $jarPath)) {
+        throw 'Khong tim thay backend/target/QuanLyKTX.jar sau khi build. Vui long kiem tra Java 17+ hoac chay thu Build_App.bat.'
+    }
+}
 $serverPort = 8080
 foreach ($line in [IO.File]::ReadAllLines($configPath)) {
     if ($line -match '^\s*server\.port\s*=\s*(\d+)\s*$') { $serverPort = [int]$matches[1] }
