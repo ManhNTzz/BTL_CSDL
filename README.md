@@ -17,7 +17,7 @@ Hệ thống Quản lý Ký túc xá được xây dựng với kiến trúc hi�
 ### 2. Tạo Cơ sở dữ liệu
 1. Lấy file sql sinh database trong Yêu cầu 2.
 2. Chạy toàn bộ file (biểu tượng tia sét) để tạo database `QuanLyKTX`, cấu trúc bảng và dữ liệu mẫu đầy đủ.
-
+3. Vui lòng vào thư mục config sao chép file application-local.example.properties đổi tên thành application-local.properties và điểm tài khoản và mật khẩu MySQL
 ### 3. Đóng gói ứng dụng (Build JAR)
 - Nhấp đúp file **`Build_App.bat`** (chỉ cần chạy một lần khi mới tải từ GitHub về).
 - Script sẽ tự động dùng Maven Wrapper đóng gói ứng dụng thành file thực thi `backend/target/QuanLyKTX.jar`.
