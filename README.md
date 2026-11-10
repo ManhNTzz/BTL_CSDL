@@ -15,7 +15,7 @@ Hệ thống Quản lý Ký túc xá được xây dựng với kiến trúc hi�
 - *(Không bắt buộc cài Maven hay Node.js/npm vì dự án đã tích hợp sẵn Maven Wrapper và giao diện web pre-built).*
 
 ### 2. Tạo Cơ sở dữ liệu
-1. Mở file `database/01_tao_csdl_moi.sql` trong **MySQL Workbench** (hoặc DBeaver / Navicat).
+1. Lấy file sql sinh database trong Yêu cầu 2.
 2. Chạy toàn bộ file (biểu tượng tia sét) để tạo database `QuanLyKTX`, cấu trúc bảng và dữ liệu mẫu đầy đủ.
 
 ### 3. Đóng gói ứng dụng (Build JAR)
