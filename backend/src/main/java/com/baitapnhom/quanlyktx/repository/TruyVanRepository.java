@@ -128,8 +128,8 @@ public class TruyVanRepository {
 
     // Dịch vụ
     private static final String SQL_SU_DUNG = """
-            SELECT l.MaSV, n.HoTen, l.MaDV, d.TenDV, l.ThoiGianSD, l.SoLuong, d.DonGia,
-                   (l.SoLuong * d.DonGia) AS thanh_tien
+            SELECT l.MaSV, n.HoTen, l.MaDV, d.TenDV, l.ThoiGianSD, l.SoLuong, l.DonGia,
+                   (l.SoLuong * l.DonGia) AS thanh_tien
             FROM LAN_SU_DUNG l
             JOIN SINH_VIEN sv ON sv.MaSV = l.MaSV
             JOIN NGUOI n ON n.CCCD = sv.CCCD

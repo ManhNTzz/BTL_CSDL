@@ -5,6 +5,7 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.IdClass;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -27,14 +28,22 @@ public class LanSuDung {
     @Column(name = "SoLuong", nullable = false)
     private Integer soLuong;
 
+    @Column(name = "DonGia", nullable = false)
+    private BigDecimal donGia;
+
     public LanSuDung() {
     }
 
     public LanSuDung(String maSV, String maDV, LocalDateTime thoiGianSD, Integer soLuong) {
+        this(maSV, maDV, thoiGianSD, soLuong, BigDecimal.ZERO);
+    }
+
+    public LanSuDung(String maSV, String maDV, LocalDateTime thoiGianSD, Integer soLuong, BigDecimal donGia) {
         this.maSV = maSV;
         this.maDV = maDV;
         this.thoiGianSD = thoiGianSD;
         this.soLuong = soLuong;
+        this.donGia = donGia != null ? donGia : BigDecimal.ZERO;
     }
 
     public String getMaSV() {
@@ -57,4 +66,11 @@ public class LanSuDung {
         this.soLuong = soLuong;
     }
 
+    public BigDecimal getDonGia() {
+        return donGia;
+    }
+
+    public void setDonGia(BigDecimal donGia) {
+        this.donGia = donGia;
+    }
 }

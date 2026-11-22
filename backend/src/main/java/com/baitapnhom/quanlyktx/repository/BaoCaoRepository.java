@@ -95,7 +95,7 @@ public class BaoCaoRepository {
     // Truy vấn 4
     private static final String SQL_DOANH_THU_THANG = """
             WITH dich_vu_thuong AS (
-                SELECT l.MaDV, SUM(l.SoLuong * d.DonGia) AS SoTien, SUM(l.SoLuong) AS SoLuong
+                SELECT l.MaDV, SUM(l.SoLuong * l.DonGia) AS SoTien, SUM(l.SoLuong) AS SoLuong
                 FROM LAN_SU_DUNG l
                 JOIN DICH_VU d ON d.MaDV = l.MaDV AND d.TenDV <> 'Trông xe'
                 WHERE l.ThoiGianSD >= ? AND l.ThoiGianSD < DATE_ADD(?, INTERVAL 1 MONTH)

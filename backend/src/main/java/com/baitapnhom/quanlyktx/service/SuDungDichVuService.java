@@ -61,10 +61,11 @@ public class SuDungDichVuService {
         if (lanSuDungRepository.existsById(new LanSuDungId(req.maSV(), req.maDV(), thoiGian))) {
             throw AppException.exists("Đã có bản ghi sử dụng dịch vụ này vào đúng thời điểm " + thoiGian);
         }
-        lanSuDungRepository.saveAndFlush(new LanSuDung(req.maSV(), req.maDV(), thoiGian, req.soLuong()));
-        BigDecimal thanhTien = dv.getDonGia().multiply(BigDecimal.valueOf(req.soLuong()));
+        BigDecimal donGia = dv.getDonGia();
+        lanSuDungRepository.saveAndFlush(new LanSuDung(req.maSV(), req.maDV(), thoiGian, req.soLuong(), donGia));
+        BigDecimal thanhTien = donGia.multiply(BigDecimal.valueOf(req.soLuong()));
         return new DichVuDto.SuDungResponse(sv.maSV(), sv.hoTen(), dv.getMaDV(), dv.getTenDV(), thoiGian,
-                req.soLuong(), dv.getDonGia(), thanhTien);
+                req.soLuong(), donGia, thanhTien);
     }
 
     // Hủy một lần ghi nhận sử dụng dịch vụ (khi nhập nhầm).

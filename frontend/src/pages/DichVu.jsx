@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { api } from '../api/endpoints.js';
 import DataTable, { IconButton, RowActions } from '../components/DataTable.jsx';
-import { DatePicker, DateTimePicker, Field, Input, Select } from '../components/Fields.jsx';
+import { DatePicker, DateTimePicker, Field, Input, MonthPicker, Select } from '../components/Fields.jsx';
 import Icon from '../components/Icon.jsx';
 import { ConfirmModal, FormModal } from '../components/Modal.jsx';
 import { useToast } from '../components/Toast.jsx';
@@ -17,10 +17,16 @@ function DichVuForm({ initial, onClose, onSaved }) {
     maDV: initial?.maDV ?? '',
     tenDV: initial?.tenDV ?? '',
     donGia: initial?.donGia ?? '',
+    tuThang: '2026-10',
   });
 
   async function submit() {
-    const body = { maDV: values.maDV.trim(), tenDV: values.tenDV.trim(), donGia: Number(values.donGia) };
+    const body = {
+      maDV: values.maDV.trim(),
+      tenDV: values.tenDV.trim(),
+      donGia: Number(values.donGia),
+      tuThang: editing ? values.tuThang : null,
+    };
     if (editing) await api.dichVu.update(initial.maDV, body);
     else await api.dichVu.create(body);
     onSaved(editing ? 'Đã cập nhật dịch vụ' : 'Đã thêm dịch vụ');
@@ -34,6 +40,15 @@ function DichVuForm({ initial, onClose, onSaved }) {
       <Field label="Đơn giá (đ)" required hint="Giá cho một đơn vị (kg, suất, giờ, lượt...)">
         <Input type="number" min="0" {...bind('donGia')} required />
       </Field>
+      {editing && (
+        <Field
+          label="Áp dụng từ tháng"
+          hint="Đơn giá mới sẽ áp dụng từ tháng này trở đi. Hóa đơn và các lần sử dụng của các tháng trước (ví dụ tháng 9) sẽ được giữ nguyên theo đơn giá cũ."
+          wide
+        >
+          <MonthPicker {...bind('tuThang')} allowClear={false} placeholder="Chọn tháng áp dụng..." />
+        </Field>
+      )}
       <Field label="Tên dịch vụ" required wide hint="Nên ghi kèm đơn vị, ví dụ: Giặt là(kg). Dịch vụ trông xe dùng đúng tên “Trông xe” và được tổng hợp qua vé/lượt xe.">
         <Input {...bind('tenDV')} required maxLength={50} />
       </Field>

@@ -16,7 +16,11 @@ public final class DichVuDto {
         public record Request(
                         @NotBlank @Size(max = 10) String maDV,
                         @NotBlank @Size(max = 50) String tenDV,
-                        @NotNull @PositiveOrZero BigDecimal donGia) {
+                        @NotNull @PositiveOrZero BigDecimal donGia,
+                        String tuThang) {
+                public Request(String maDV, String tenDV, BigDecimal donGia) {
+                        this(maDV, tenDV, donGia, null);
+                }
         }
 
         public record Response(String maDV, String tenDV, BigDecimal donGia) {

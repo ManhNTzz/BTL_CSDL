@@ -53,7 +53,16 @@ public class DichVuService {
         }
         dv.setTenDV(req.tenDV().trim());
         dv.setDonGia(req.donGia());
-        return toResponse(dichVuRepository.saveAndFlush(dv));
+        DichVu saved = dichVuRepository.saveAndFlush(dv);
+
+        // Cập nhật đơn giá cho các lần sử dụng từ tháng được chỉ định trở đi
+        // Các tháng trước đó (ví dụ tháng 9 khi đổi giá tháng 10) được giữ nguyên theo đơn giá cũ
+        if (req.tuThang() != null && !req.tuThang().isBlank()) {
+            java.time.LocalDate tuNgay = com.baitapnhom.quanlyktx.util.DateUtil.parseThang(req.tuThang()).atDay(1);
+            jdbc.update("UPDATE LAN_SU_DUNG SET DonGia = ? WHERE MaDV = ? AND ThoiGianSD >= ?",
+                    req.donGia(), maDV, tuNgay.atStartOfDay());
+        }
+        return toResponse(saved);
     }
 
     @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)

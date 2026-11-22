@@ -73,14 +73,16 @@ CREATE TABLE DICH_VU (
 
 -- Thực thể yếu LAN_SU_DUNG (lần sử dụng)
 CREATE TABLE LAN_SU_DUNG (
-    MaSV       VARCHAR(10) NOT NULL,
-    MaDV       VARCHAR(10) NOT NULL,
-    ThoiGianSD DATETIME    NOT NULL,
-    SoLuong    INT         NOT NULL DEFAULT 1,
+    MaSV       VARCHAR(10)    NOT NULL,
+    MaDV       VARCHAR(10)    NOT NULL,
+    ThoiGianSD DATETIME       NOT NULL,
+    SoLuong    INT            NOT NULL DEFAULT 1,
+    DonGia     DECIMAL(12, 0) NOT NULL,
     PRIMARY KEY (MaSV, MaDV, ThoiGianSD),
     CONSTRAINT fk_lsd_sv      FOREIGN KEY (MaSV) REFERENCES SINH_VIEN (MaSV) ON DELETE CASCADE,
     CONSTRAINT fk_lsd_dv      FOREIGN KEY (MaDV) REFERENCES DICH_VU (MaDV)   ON DELETE CASCADE,
-    CONSTRAINT ck_lsd_soluong CHECK (SoLuong > 0)
+    CONSTRAINT ck_lsd_soluong CHECK (SoLuong > 0),
+    CONSTRAINT ck_lsd_dongia  CHECK (DonGia >= 0)
 ) ENGINE = InnoDB;
 
 -- Thực thể XE (xe)
@@ -290,12 +292,16 @@ BEGIN
 END$$
 
 -- Ràng buộc không ghi dịch vụ 'Trông xe' vào LAN_SU_DUNG để tránh tính trùng tiền
+-- Tự động nạp đơn giá từ danh mục DICH_VU vào LAN_SU_DUNG nếu chưa có để bảo toàn đơn giá lịch sử
 CREATE TRIGGER trg_lsd_bi BEFORE INSERT ON LAN_SU_DUNG
 FOR EACH ROW
 BEGIN
     IF EXISTS (SELECT 1 FROM DICH_VU WHERE MaDV = NEW.MaDV AND TenDV = 'Trông xe') THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Dịch vụ Trông xe của sinh viên được quản lý qua VE_THANG và LUOT_GUI_LAY_XE, không ghi vào LAN_SU_DUNG';
+    END IF;
+    IF NEW.DonGia IS NULL OR NEW.DonGia = 0 THEN
+        SET NEW.DonGia = (SELECT DonGia FROM DICH_VU WHERE MaDV = NEW.MaDV);
     END IF;
 END$$
 
@@ -305,6 +311,9 @@ BEGIN
     IF EXISTS (SELECT 1 FROM DICH_VU WHERE MaDV = NEW.MaDV AND TenDV = 'Trông xe') THEN
         SIGNAL SQLSTATE '45000'
             SET MESSAGE_TEXT = 'Dịch vụ Trông xe của sinh viên được quản lý qua VE_THANG và LUOT_GUI_LAY_XE, không ghi vào LAN_SU_DUNG';
+    END IF;
+    IF NEW.DonGia IS NULL OR NEW.DonGia = 0 THEN
+        SET NEW.DonGia = (SELECT DonGia FROM DICH_VU WHERE MaDV = NEW.MaDV);
     END IF;
 END$$
 
@@ -402,24 +411,24 @@ INSERT INTO DICH_VU (MaDV, TenDV, DonGia) VALUES
 ('DV04', 'Ăn uống(suất)',       25000),
 ('DV05', 'Nước uống đóng bình', 20000);
 
-INSERT INTO LAN_SU_DUNG (MaSV, MaDV, ThoiGianSD, SoLuong) VALUES
-('B24DCCN001', 'DV01', '2026-09-05 08:30:00', 3),
-('B24DCCN001', 'DV01', '2026-09-19 09:00:00', 2),
-('B24DCCN001', 'DV04', '2026-09-12 12:15:00', 4),
-('B24DCCN001', 'DV01', '2026-10-03 08:10:00', 4),
-('B24DCCN001', 'DV04', '2026-10-10 18:30:00', 2),
-('B24DCVT002', 'DV01', '2026-09-07 20:00:00', 2),
-('B24DCVT002', 'DV03', '2026-09-20 14:00:00', 3),
-('B24DCVT002', 'DV01', '2026-10-04 19:30:00', 5),
-('B24DCCN003', 'DV04', '2026-09-15 12:00:00', 10),
-('B24DCCN003', 'DV01', '2026-10-11 07:45:00', 3),
-('B24DCDK004', 'DV03', '2026-08-30 10:00:00', 2),
-('B24DCDK004', 'DV01', '2026-09-25 08:00:00', 2),
-('B24DCCN005', 'DV04', '2026-10-02 18:00:00', 6),
-('B24DCCN005', 'DV01', '2026-10-16 09:30:00', 2),
-('B24DCMR006', 'DV03', '2026-10-14 15:00:00', 4),
-('B24DCDT007', 'DV04', '2026-10-06 12:30:00', 8),
-('B24DCCN008', 'DV01', '2026-10-18 08:20:00', 3);
+INSERT INTO LAN_SU_DUNG (MaSV, MaDV, ThoiGianSD, SoLuong, DonGia) VALUES
+('B24DCCN001', 'DV01', '2026-09-05 08:30:00', 3, 20000),
+('B24DCCN001', 'DV01', '2026-09-19 09:00:00', 2, 20000),
+('B24DCCN001', 'DV04', '2026-09-12 12:15:00', 4, 25000),
+('B24DCCN001', 'DV01', '2026-10-03 08:10:00', 4, 20000),
+('B24DCCN001', 'DV04', '2026-10-10 18:30:00', 2, 25000),
+('B24DCVT002', 'DV01', '2026-09-07 20:00:00', 2, 20000),
+('B24DCVT002', 'DV03', '2026-09-20 14:00:00', 3, 30000),
+('B24DCVT002', 'DV01', '2026-10-04 19:30:00', 5, 20000),
+('B24DCCN003', 'DV04', '2026-09-15 12:00:00', 10, 25000),
+('B24DCCN003', 'DV01', '2026-10-11 07:45:00', 3, 20000),
+('B24DCDK004', 'DV03', '2026-08-30 10:00:00', 2, 30000),
+('B24DCDK004', 'DV01', '2026-09-25 08:00:00', 2, 20000),
+('B24DCCN005', 'DV04', '2026-10-02 18:00:00', 6, 25000),
+('B24DCCN005', 'DV01', '2026-10-16 09:30:00', 2, 20000),
+('B24DCMR006', 'DV03', '2026-10-14 15:00:00', 4, 30000),
+('B24DCDT007', 'DV04', '2026-10-06 12:30:00', 8, 25000),
+('B24DCCN008', 'DV01', '2026-10-18 08:20:00', 3, 20000);
 
 INSERT INTO LUOT_THAM (CCCD_Khach, MaSV, NgayDenChoi) VALUES
 ('038178000011', 'B24DCCN001', '2026-10-04 15:00:00'),
@@ -516,7 +525,7 @@ BEGIN
         WHERE o.NgayBatDau < v_sau AND (o.NgayKetThuc IS NULL OR o.NgayKetThuc > v_bd)
     ),
     dv AS (
-        SELECT l.MaSV, SUM(l.SoLuong * d.DonGia) AS SoTien
+        SELECT l.MaSV, SUM(l.SoLuong * l.DonGia) AS SoTien
         FROM LAN_SU_DUNG l
         JOIN DICH_VU d ON d.MaDV = l.MaDV
         WHERE l.ThoiGianSD >= v_bd AND l.ThoiGianSD < v_sau
@@ -564,7 +573,7 @@ BEGIN
     CALL sp_kiem_tra_danh_muc_trong_xe(p_tu, p_den);
 
     WITH phat_sinh AS (
-        SELECT l.MaSV, l.MaDV, l.SoLuong * d.DonGia AS SoTien
+        SELECT l.MaSV, l.MaDV, l.SoLuong * l.DonGia AS SoTien
         FROM LAN_SU_DUNG l
         JOIN DICH_VU d ON d.MaDV = l.MaDV AND d.TenDV <> 'Trông xe'
         WHERE l.ThoiGianSD >= p_tu AND l.ThoiGianSD < DATE_ADD(p_den, INTERVAL 1 DAY)
@@ -623,7 +632,7 @@ BEGIN
     CALL sp_kiem_tra_danh_muc_trong_xe(v_bd, LAST_DAY(v_bd));
 
     WITH dich_vu_thuong AS (
-        SELECT l.MaDV, SUM(l.SoLuong * d.DonGia) AS SoTien
+        SELECT l.MaDV, SUM(l.SoLuong * l.DonGia) AS SoTien
         FROM LAN_SU_DUNG l
         JOIN DICH_VU d ON d.MaDV = l.MaDV AND d.TenDV <> 'Trông xe'
         WHERE l.ThoiGianSD >= v_bd AND l.ThoiGianSD < v_sau
