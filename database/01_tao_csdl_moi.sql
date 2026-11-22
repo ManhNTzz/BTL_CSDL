@@ -4,7 +4,7 @@ USE QuanLyKTX;
 
 -- Thực thể cha NGUOI (người)
 CREATE TABLE NGUOI (
-    CCCD     CHAR(12)     NOT NULL,
+    CCCD     CHAR(12)     NOT NULL, 
     HoTen    VARCHAR(100) NOT NULL,
     NgaySinh DATE         NOT NULL,
     PRIMARY KEY (CCCD)
