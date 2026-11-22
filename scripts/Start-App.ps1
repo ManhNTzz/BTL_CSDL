@@ -2,7 +2,7 @@ $ErrorActionPreference = 'Stop'
 $projectRoot = [IO.Path]::GetFullPath((Join-Path $PSScriptRoot '..'))
 Set-Location -LiteralPath $projectRoot
 $configPath = Join-Path $projectRoot 'config\application-local.properties'
-$jarPath = Join-Path $projectRoot 'backend\target\QuanLyKTX.jar'
+$jarPath = Join-Path $projectRoot 'backend\target\QuanLyKTX.jar' 
 $runDir = Join-Path $projectRoot 'run'
 New-Item -ItemType Directory -Force -Path $runDir | Out-Null
 $configDir = Join-Path $projectRoot 'config'
