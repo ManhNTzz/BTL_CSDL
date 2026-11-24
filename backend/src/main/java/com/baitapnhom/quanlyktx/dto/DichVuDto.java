@@ -16,25 +16,26 @@ public final class DichVuDto {
         public record Request(
                         @NotBlank @Size(max = 10) String maDV,
                         @NotBlank @Size(max = 50) String tenDV,
-                        @NotNull @PositiveOrZero BigDecimal donGia,
-                        String tuThang) {
+                @NotNull @PositiveOrZero BigDecimal donGia,
+                        String tuThang){
+
                 public Request(String maDV, String tenDV, BigDecimal donGia) {
                         this(maDV, tenDV, donGia, null);
+                }}
+
+                public record Response(String maDV, String tenDV, BigDecimal donGia) {
                 }
-        }
 
-        public record Response(String maDV, String tenDV, BigDecimal donGia) {
-        }
+                // thoiGianSD bỏ trống = bây giờ.
+                public record SuDungRequest(
+                                @NotBlank String maSV,
+                                @NotBlank String maDV,
+                                LocalDateTime thoiGianSD,
+                                @NotNull @Min(1) Integer soLuong) {
+                }
 
-        // thoiGianSD bỏ trống = bây giờ.
-        public record SuDungRequest(
-                        @NotBlank String maSV,
-                        @NotBlank String maDV,
-                        LocalDateTime thoiGianSD,
-                        @NotNull @Min(1) Integer soLuong) {
-        }
-
-        public record SuDungResponse(String maSV, String hoTen, String maDV, String tenDV, LocalDateTime thoiGianSD,
-                        int soLuong, BigDecimal donGia, BigDecimal thanhTien) {
-        }
+                public record SuDungResponse(String maSV, String hoTen, String maDV, String tenDV,
+                                LocalDateTime thoiGianSD,
+                                int soLuong, BigDecimal donGia, BigDecimal thanhTien) {
+                }
 }

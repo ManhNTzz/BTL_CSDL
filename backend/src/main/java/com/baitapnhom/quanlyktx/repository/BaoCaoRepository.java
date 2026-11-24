@@ -95,7 +95,8 @@ public class BaoCaoRepository {
     // Truy vấn 4
     private static final String SQL_DOANH_THU_THANG = """
             WITH dich_vu_thuong AS (
-                SELECT l.MaDV, SUM(l.SoLuong * l.DonGia) AS SoTien, SUM(l.SoLuong) AS SoLuong
+                SELECT l.MaDV, SUM(l.SoLuong * l.DonGia) AS SoTien, SUM(l.SoLuong) AS SoLuong,
+                       MAX(l.DonGia) AS DonGiaThang
                 FROM LAN_SU_DUNG l
                 JOIN DICH_VU d ON d.MaDV = l.MaDV AND d.TenDV <> 'Trông xe'
                 WHERE l.ThoiGianSD >= ? AND l.ThoiGianSD < DATE_ADD(?, INTERVAL 1 MONTH)
@@ -111,7 +112,14 @@ public class BaoCaoRepository {
                 FROM V_LUOT_GUI_LAY_XE
                 WHERE ThoiGianGui >= ? AND ThoiGianGui < DATE_ADD(?, INTERVAL 1 MONTH)
             )
-            SELECT d.MaDV, d.TenDV, d.DonGia AS DonGiaNiemYet,
+            SELECT d.MaDV, d.TenDV,
+                   COALESCE(
+                       (SELECT g.DonGia FROM LICH_SU_GIA_DICH_VU g
+                        WHERE g.MaDV = d.MaDV AND g.ThangApDung <= ?
+                        ORDER BY g.ThangApDung DESC LIMIT 1),
+                       dt.DonGiaThang,
+                       d.DonGia
+                   ) AS DonGiaNiemYet,
                    CASE WHEN d.TenDV = 'Trông xe' THEN NULL
                                  ELSE COALESCE(dt.SoLuong, 0) END AS SoLuong,
                    COALESCE(dt.SoTien, 0) AS DoanhThuDichVu,
@@ -144,7 +152,7 @@ public class BaoCaoRepository {
                     rs.getBigDecimal("DoanhThuVeThang"),
                     rs.getBigDecimal("DoanhThuPhatSinh"),
                     rs.getBigDecimal("TongDoanhThu")),
-                    thang, thang, thang, thang, thang);
+                    thang, thang, thang, thang, thang, thang);
         }
 
         List<LocalDate> cacThang = cacThangBaoCao();

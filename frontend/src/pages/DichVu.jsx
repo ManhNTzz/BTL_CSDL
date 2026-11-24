@@ -9,7 +9,7 @@ import { Card, ErrorBox, PageHeader, Tabs, Toolbar } from '../components/Ui.jsx'
 import { useAsync } from '../hooks/useAsync.js';
 import { useForm } from '../hooks/useForm.js';
 import { useDichVuOptions, useSinhVienOptions } from '../hooks/useOptions.js';
-import { fmtDateTime, localDateTimeInput, money, sum, withSeconds } from '../utils/format.js';
+import { fmtDateTime, localDateTimeInput, localMonth, money, sum, withSeconds } from '../utils/format.js';
 
 function DichVuForm({ initial, onClose, onSaved }) {
   const editing = Boolean(initial);
@@ -17,7 +17,7 @@ function DichVuForm({ initial, onClose, onSaved }) {
     maDV: initial?.maDV ?? '',
     tenDV: initial?.tenDV ?? '',
     donGia: initial?.donGia ?? '',
-    tuThang: '2026-10',
+    tuThang: localMonth(),
   });
 
   async function submit() {

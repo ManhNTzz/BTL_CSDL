@@ -71,6 +71,16 @@ CREATE TABLE DICH_VU (
     CONSTRAINT ck_dv_dongia CHECK (DonGia >= 0)
 ) ENGINE = InnoDB;
 
+-- Bảng LICH_SU_GIA_DICH_VU lưu vết đơn giá theo từng mốc tháng để bảo toàn hóa đơn và báo cáo lịch sử
+CREATE TABLE LICH_SU_GIA_DICH_VU (
+    MaDV        VARCHAR(10)    NOT NULL,
+    ThangApDung DATE           NOT NULL,
+    DonGia      DECIMAL(12, 0) NOT NULL,
+    PRIMARY KEY (MaDV, ThangApDung),
+    CONSTRAINT fk_lsg_dv FOREIGN KEY (MaDV) REFERENCES DICH_VU (MaDV) ON DELETE CASCADE,
+    CONSTRAINT ck_lsg_dongia CHECK (DonGia >= 0)
+) ENGINE = InnoDB;
+
 -- Thực thể yếu LAN_SU_DUNG (lần sử dụng)
 CREATE TABLE LAN_SU_DUNG (
     MaSV       VARCHAR(10)    NOT NULL,
@@ -411,6 +421,13 @@ INSERT INTO DICH_VU (MaDV, TenDV, DonGia) VALUES
 ('DV04', 'Ăn uống(suất)',       25000),
 ('DV05', 'Nước uống đóng bình', 20000);
 
+INSERT INTO LICH_SU_GIA_DICH_VU (MaDV, ThangApDung, DonGia) VALUES
+('DV01', '2026-08-01', 20000),
+('DV02', '2026-08-01', 3000),
+('DV03', '2026-08-01', 30000),
+('DV04', '2026-08-01', 25000),
+('DV05', '2026-08-01', 20000);
+
 INSERT INTO LAN_SU_DUNG (MaSV, MaDV, ThoiGianSD, SoLuong, DonGia) VALUES
 ('B24DCCN001', 'DV01', '2026-09-05 08:30:00', 3, 20000),
 ('B24DCCN001', 'DV01', '2026-09-19 09:00:00', 2, 20000),
@@ -632,7 +649,8 @@ BEGIN
     CALL sp_kiem_tra_danh_muc_trong_xe(v_bd, LAST_DAY(v_bd));
 
     WITH dich_vu_thuong AS (
-        SELECT l.MaDV, SUM(l.SoLuong * l.DonGia) AS SoTien
+        SELECT l.MaDV, SUM(l.SoLuong * l.DonGia) AS SoTien, SUM(l.SoLuong) AS SoLuong,
+               MAX(l.DonGia) AS DonGiaThang
         FROM LAN_SU_DUNG l
         JOIN DICH_VU d ON d.MaDV = l.MaDV AND d.TenDV <> 'Trông xe'
         WHERE l.ThoiGianSD >= v_bd AND l.ThoiGianSD < v_sau
@@ -648,7 +666,14 @@ BEGIN
         FROM V_LUOT_GUI_LAY_XE
         WHERE ThoiGianGui >= v_bd AND ThoiGianGui < v_sau
     )
-    SELECT v_bd AS Thang, d.MaDV, d.TenDV, d.DonGia AS DonGiaNiemYet,
+    SELECT v_bd AS Thang, d.MaDV, d.TenDV,
+           COALESCE(
+               (SELECT g.DonGia FROM LICH_SU_GIA_DICH_VU g
+                WHERE g.MaDV = d.MaDV AND g.ThangApDung <= v_bd
+                ORDER BY g.ThangApDung DESC LIMIT 1),
+               dt.DonGiaThang,
+               d.DonGia
+           ) AS DonGiaNiemYet,
            CASE WHEN d.TenDV = 'Trông xe' THEN ve.SoTien + gui.SoTien
                 ELSE COALESCE(dt.SoTien, 0) END AS DoanhThu
     FROM DICH_VU d

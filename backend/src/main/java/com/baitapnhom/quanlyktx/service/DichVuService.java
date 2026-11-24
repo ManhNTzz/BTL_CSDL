@@ -41,7 +41,16 @@ public class DichVuService {
         if (dichVuRepository.existsById(maDV)) {
             throw AppException.exists("Mã dịch vụ " + maDV + " đã tồn tại");
         }
-        return toResponse(dichVuRepository.saveAndFlush(new DichVu(maDV, req.tenDV().trim(), req.donGia())));
+        DichVu dv = dichVuRepository.saveAndFlush(new DichVu(maDV, req.tenDV().trim(), req.donGia()));
+        java.time.LocalDate thangDau = (req.tuThang() != null && !req.tuThang().isBlank())
+                ? com.baitapnhom.quanlyktx.util.DateUtil.parseThang(req.tuThang()).atDay(1)
+                : java.time.LocalDate.now().withDayOfMonth(1);
+        jdbc.update("""
+                INSERT INTO LICH_SU_GIA_DICH_VU (MaDV, ThangApDung, DonGia)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE DonGia = VALUES(DonGia)
+                """, maDV, thangDau, req.donGia());
+        return toResponse(dv);
     }
 
     @Transactional(isolation = org.springframework.transaction.annotation.Isolation.READ_COMMITTED)
@@ -55,13 +64,22 @@ public class DichVuService {
         dv.setDonGia(req.donGia());
         DichVu saved = dichVuRepository.saveAndFlush(dv);
 
-        // Cập nhật đơn giá cho các lần sử dụng từ tháng được chỉ định trở đi
-        // Các tháng trước đó (ví dụ tháng 9 khi đổi giá tháng 10) được giữ nguyên theo đơn giá cũ
-        if (req.tuThang() != null && !req.tuThang().isBlank()) {
-            java.time.LocalDate tuNgay = com.baitapnhom.quanlyktx.util.DateUtil.parseThang(req.tuThang()).atDay(1);
-            jdbc.update("UPDATE LAN_SU_DUNG SET DonGia = ? WHERE MaDV = ? AND ThoiGianSD >= ?",
-                    req.donGia(), maDV, tuNgay.atStartOfDay());
-        }
+        java.time.LocalDate thangDau = (req.tuThang() != null && !req.tuThang().isBlank())
+                ? com.baitapnhom.quanlyktx.util.DateUtil.parseThang(req.tuThang()).atDay(1)
+                : java.time.LocalDate.now().withDayOfMonth(1);
+
+        // Lưu vết lịch sử giá dịch vụ theo tháng áp dụng để bảo toàn báo cáo và hóa đơn các tháng trước
+        jdbc.update("""
+                INSERT INTO LICH_SU_GIA_DICH_VU (MaDV, ThangApDung, DonGia)
+                VALUES (?, ?, ?)
+                ON DUPLICATE KEY UPDATE DonGia = VALUES(DonGia)
+                """, maDV, thangDau, req.donGia());
+
+        // Cập nhật đơn giá cho các lần sử dụng từ tháng này trở đi trong LAN_SU_DUNG
+        // Toàn bộ các lần sử dụng của các tháng trước (ví dụ tháng 9 khi đổi giá tháng 10) được giữ nguyên theo đơn giá cũ
+        jdbc.update("UPDATE LAN_SU_DUNG SET DonGia = ? WHERE MaDV = ? AND ThoiGianSD >= ?",
+                req.donGia(), maDV, thangDau.atStartOfDay());
+
         return toResponse(saved);
     }
 
